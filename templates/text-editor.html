@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+    <title>Text Correction Tool</title>
+    <script>
+        async function correctText() {
+            const inputText = document.getElementById("input_text").value;
+            const responseField = document.getElementById("response");
+
+            responseField.value = "Processing your request...";
+
+            try {
+                const res = await fetch("/correct", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ input_text: inputText }),
+                });
+                const data = await res.json();
+                if (data.response) {
+                    responseField.value = data.response;
+                } else {
+                    responseField.value = "An error occurred: " + data.error;
+                }
+            } catch (error) {
+                responseField.value = "An error occurred: " + error.message;
+            }
+        }
+
+        function copyToClipboard() {
+            const responseField = document.getElementById("response");
+            responseField.select();
+            document.execCommand("copy");
+            alert("Response copied to clipboard!");
+        }
+
+        function goBack() {
+            window.location.href = "/";
+        }
+    </script>
+</head>
+<body>
+    <h1>Text Correction Tool</h1>
+    <div class="main-container">
+        <!-- Section gauche -->
+        <div class="left-column">
+            <form onsubmit="correctText(); return false;">
+                <label for="input_text">Collez votre texte ici :</label><br>
+                <textarea id="input_text" rows="10" cols="80" placeholder="✍️ Collez le texte à corriger ici..."></textarea><br><br>
+                <button type="submit">Corriger le texte</button>
+            </form>
+        </div>
+        <!-- Section droite -->
+        <div class="right-column">
+            <h2>Résultat</h2>
+            <textarea id="response" rows="15" cols="80" readonly></textarea><br>
+            <div class="button-container">
+                <button onclick="copyToClipboard()">Copier le texte corrigé</button>
+                <button onclick="goBack()">Retour à l'accueil</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,133 @@
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    background-color: #604fd7; /* Background violet */
+    color: #333;
+    margin: 0;
+    padding: 0;
+    overflow: hidden; /* Évite les scrolls non désirés */
+}
+
+/* Header */
+h1 {
+    text-align: center;
+    color: #ffffff; /* Titre blanc pour contraste */
+    margin: 10px 0; /* Réduit l'espacement autour du titre */
+    font-size: 1.8rem; /* Légèrement réduit */
+}
+
+/* Main Container */
+.main-container {
+    display: flex;
+    gap: 15px; /* Réduit l'espace entre les colonnes */
+    padding: 15px; /* Réduit le padding général */
+    max-width: 1300px;
+    margin: 0 auto;
+    height: calc(100vh - 60px); /* Ajuste la hauteur pour mieux s'adapter */
+    box-sizing: border-box;
+    align-items: stretch; /* Assure que les colonnes s'étendent à la même hauteur */
+}
+
+/* Columns (Adjusted Widths) */
+.left-column {
+    flex: 4; /* Élargit la colonne gauche */
+    background: #ffffff;
+    border-radius: 8px; /* Coins arrondis en haut et en bas */
+    padding: 15px; /* Réduit le padding interne */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column; /* Permet aux enfants de s'empiler verticalement */
+    justify-content: space-between;
+    overflow-y: auto; /* Ajoute un défilement si nécessaire */
+}
+
+.right-column {
+    flex: 3; /* Réduit légèrement la colonne droite */
+    background: #ffffff;
+    border-radius: 8px; /* Coins arrondis */
+    padding: 15px; /* Réduit le padding interne */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    overflow-y: auto; /* Ajoute un défilement si nécessaire */
+    display: flex;
+    flex-direction: column;
+}
+
+/* Textarea Styles */
+textarea {
+    width: calc(100% - 20px); /* Réduit légèrement la largeur pour respecter le padding */
+    padding: 8px; /* Réduit le padding interne */
+    margin-bottom: 8px; /* Réduit l'espace entre les champs */
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: vertical;
+    font-size: 0.9rem; /* Taille légèrement réduite */
+    color: #333;
+}
+
+textarea:focus {
+    border-color: #604fd7;
+    outline: none;
+    box-shadow: 0 0 5px rgba(96, 79, 215, 0.5);
+}
+
+/* Result Section */
+h2 {
+    margin-bottom: 10px; /* Réduit l'espacement sous le titre "Résultat" */
+}
+
+textarea#response {
+    margin-bottom: 10px; /* Réduit l'espace entre le champ de résultat et les boutons */
+}
+
+/* Button Styles */
+button {
+    display: inline-block;
+    background: #333333; /* Bordeaux profond */
+    color: #ffffff; /* Texte blanc pour contraste */
+    font-size: 0.9rem; /* Réduit la taille des boutons */
+    padding: 8px 15px; /* Réduit le padding */
+    border: none;
+    border-radius: 8px; /* Même radius que les colonnes */
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+    margin-top: 5px; /* Réduit l'espacement au-dessus */
+}
+
+button:hover {
+    background: #a30029;
+    transform: scale(1.05);
+}
+
+button:active {
+    background: #660019;
+    transform: scale(0.95);
+}
+
+/* Center the 'Générer une réponse' button */
+form button[type="submit"] {
+    margin: 15px auto; /* Réduit les marges */
+    display: block; /* Change en block-level pour être affecté par margin auto */
+}
+
+/* Button Container */
+.button-container {
+    display: flex;
+    justify-content: center; /* Centre horizontalement les boutons */
+    gap: 8px; /* Réduit l'espace entre les boutons */
+    margin-top: 5px; /* Réduit l'espace au-dessus */
+    margin-bottom: 5px; /* Réduit l'espace en bas pour éviter des coupures */
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .main-container {
+        flex-direction: column;
+        height: auto; /* Permet une hauteur ajustable sur petits écrans */
+    }
+
+    .left-column, .right-column {
+        min-width: 100%;
+        max-height: none;
+    }
+}

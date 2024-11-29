@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="static/style.css">
+    <title>Supertripper - Mail Assistant</title>
+    <script>
+        async function generateResponse() {
+            const userRequest = document.getElementById("user_request").value;
+            const userResponse = document.getElementById("user_response").value;
+            const responseField = document.getElementById("response");
+
+            responseField.value = "Generating response...";
+
+            try {
+                const res = await fetch("/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        user_request: userRequest,
+                        user_response: userResponse,
+                    }),
+                });
+                const data = await res.json();
+                if (data.response) {
+                    responseField.value = data.response;
+                } else {
+                    responseField.value = "An error occurred: " + data.error;
+                }
+            } catch (error) {
+                responseField.value = "An error occurred: " + error.message;
+            }
+        }
+
+        function copyToClipboard() {
+            const responseField = document.getElementById("response");
+            responseField.select();
+            document.execCommand("copy");
+            alert("Response copied to clipboard!");
+        }
+
+        function resetForm() {
+            location.reload(); // Rafraîchit la page
+        }
+
+        function applyRequest(button) {
+            const userRequest = button.getAttribute("data-request");
+            const userResponse = button.getAttribute("data-response");
+
+            document.getElementById("user_request").value = userRequest;
+            document.getElementById("user_response").value = userResponse;
+            document.getElementById("response").value = ""; // Réinitialise la réponse générée
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <h1>Support/Resa - Mail assistant</h1>
+    </header>
+    <main class="main-container">
+        <!-- Section gauche -->
+
+        <section class="left-column">
+            <h2>Requête</h2>
+            <div class="button-container">
+</div>
+
+            <form onsubmit="generateResponse(); return false;">
+                <label for="user_request">Quelle est la demande :</label><br>
+                <textarea id="user_request" rows="6" cols="80" placeholder="✍️ Résumez la demande."></textarea><br><br>
+
+                <label for="user_response">Vos éléments de réponse :</label><br>
+                <textarea id="user_response" rows="6" cols="80"
+                          placeholder="✍️ Expliquez puis donnez la solution."></textarea><br>
+
+                <button class="button-container" type="submit">Générer une réponse</button>
+            </form>
+            <h2>Résultat</h2>
+            <textarea id="response" rows="10" cols="80" readonly></textarea>
+            <div class="button-container">
+                <button onclick="copyToClipboard()">Copier la réponse</button>
+                <button type="button" onclick="resetForm()">Nouvelle demande</button>
+            </div>
+        </section>
+        <!-- Section droite -->
+        <section class="right-column">
+            <h2>Dernières demandes</h2>
+            <div id="recent-requests">
+                <ul>
+                    {% for request in recent_requests %}
+                        <li>
+                            <strong>Demande :</strong> {{ request.user_request }}<br>
+                            <strong>Réponse proposée :</strong> {{ request.user_response }}<br>
+                            <button type="button"
+                                    data-request="{{ request.user_request|escape }}"
+                                    data-response="{{ request.user_response|escape }}"
+                                    onclick="applyRequest(this)">Appliquer cette demande</button>
+                        </li>
+                        <hr>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
