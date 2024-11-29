@@ -10,8 +10,10 @@
             const userRequest = document.getElementById("user_request").value;
             const userResponse = document.getElementById("user_response").value;
             const responseField = document.getElementById("response");
+            const resultContainer = document.getElementById("result-container");
 
             responseField.value = "Generating response...";
+            resultContainer.style.display = "block";
 
             try {
                 const res = await fetch("/generate", {
@@ -27,83 +29,176 @@
                 const data = await res.json();
                 if (data.response) {
                     responseField.value = data.response;
+                    updateRequestHistory(userRequest, userResponse);
                 } else {
-                    responseField.value = "An error occurred: " + data.error;
+                    responseField.value = "";
+                    resultContainer.style.display = "none";
                 }
             } catch (error) {
-                responseField.value = "An error occurred: " + error.message;
+                responseField.value = "";
+                resultContainer.style.display = "none";
             }
         }
 
-        function copyToClipboard() {
-            const responseField = document.getElementById("response");
+        async function correctText() {
+            const inputText = document.getElementById("input_text").value;
+            const responseField = document.getElementById("response_correction");
+            const correctionContainer = document.getElementById("correction-container");
+
+            responseField.value = "Processing your request...";
+            correctionContainer.style.display = "block";
+
+            try {
+                const res = await fetch("/correct", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ input_text: inputText }),
+                });
+                const data = await res.json();
+                if (data.response) {
+                    responseField.value = data.response;
+                    updateCorrectionHistory(inputText);
+                } else {
+                    responseField.value = "";
+                    correctionContainer.style.display = "none";
+                }
+            } catch (error) {
+                responseField.value = "";
+                correctionContainer.style.display = "none";
+            }
+        }
+
+        function copyToClipboard(id) {
+            const responseField = document.getElementById(id);
             responseField.select();
             document.execCommand("copy");
             alert("Response copied to clipboard!");
         }
 
-        function resetForm() {
-            location.reload(); // Rafraîchit la page
+        function resetForm(fieldId, resultId, containerId) {
+            document.getElementById(fieldId).value = "";
+            document.getElementById(resultId).value = "";
+            document.getElementById(containerId).style.display = "none";
         }
 
-        function applyRequest(button) {
-            const userRequest = button.getAttribute("data-request");
-            const userResponse = button.getAttribute("data-response");
+        function updateRequestHistory(request, response) {
+            const historyContainer = document.getElementById("request-history");
+            const historyList = historyContainer.querySelector("ul");
 
-            document.getElementById("user_request").value = userRequest;
-            document.getElementById("user_response").value = userResponse;
-            document.getElementById("response").value = ""; // Réinitialise la réponse générée
+            // Create new history item
+            const newEntry = document.createElement("li");
+            newEntry.innerHTML = `
+                <strong>Demande :</strong> ${request}<br>
+                <strong>Éléments de réponse :</strong> ${response}<br>
+                <button onclick="reuseRequest('${request}', '${response}')">Réutiliser</button>
+            `;
+
+            // Add new entry and limit history to 5 items
+            if (historyList.children.length >= 5) {
+                historyList.removeChild(historyList.lastChild);
+            }
+            historyList.prepend(newEntry);
+
+            // Show the history container
+            historyContainer.style.display = "block";
+        }
+
+        function updateCorrectionHistory(inputText) {
+            const historyContainer = document.getElementById("correction-history");
+            const historyList = historyContainer.querySelector("ul");
+
+            // Create new history item
+            const newEntry = document.createElement("li");
+            newEntry.innerHTML = `
+                <strong>Texte corrigé :</strong> ${inputText}<br>
+                <button onclick="reuseCorrection('${inputText}')">Réutiliser</button>
+            `;
+
+            // Add new entry and limit history to 5 items
+            if (historyList.children.length >= 5) {
+                historyList.removeChild(historyList.lastChild);
+            }
+            historyList.prepend(newEntry);
+
+            // Show the history container
+            historyContainer.style.display = "block";
+        }
+
+        function reuseRequest(request, response) {
+            document.getElementById("user_request").value = request;
+            document.getElementById("user_response").value = response;
+        }
+
+        function reuseCorrection(inputText) {
+            document.getElementById("input_text").value = inputText;
         }
     </script>
 </head>
 <body>
     <header>
-        <h1>Support/Resa - Mail assistant</h1>
+        <h1>Mail Assistant</h1>
     </header>
     <main class="main-container">
-        <!-- Section gauche -->
+        <!-- Row 1 : Colonnes principales -->
+        <div class="row">
+            <!-- Première colonne -->
+            <section class="column">
+                <h2>Rédiger une solution</h2>
+                <form onsubmit="generateResponse(); return false;">
+                    <label for="user_request">Quelle est la demande :</label><br>
+                    <textarea id="user_request" rows="6" placeholder="✍️ Résumez la demande."></textarea><br><br>
 
-        <section class="left-column">
-            <h2>Requête</h2>
-            <div class="button-container">
-</div>
+                    <label for="user_response">Vos éléments de réponse :</label><br>
+                    <textarea id="user_response" rows="6" placeholder="✍️ Expliquez puis donnez la solution."></textarea><br>
 
-            <form onsubmit="generateResponse(); return false;">
-                <label for="user_request">Quelle est la demande :</label><br>
-                <textarea id="user_request" rows="6" cols="80" placeholder="✍️ Résumez la demande."></textarea><br><br>
+                    <button type="submit">Générer une réponse</button>
+                </form>
+                <div id="result-container" class="result-section" style="display: none;">
+                    <h2>Résultat</h2>
+                    <textarea id="response" rows="6" readonly></textarea>
+                    <div class="button-container">
+                        <button onclick="copyToClipboard('response')">Copier la réponse</button>
+                        <button onclick="resetForm('user_request', 'response', 'result-container')">Nouvelle requête</button>
+                    </div>
+                </div>
+            </section>
 
-                <label for="user_response">Vos éléments de réponse :</label><br>
-                <textarea id="user_response" rows="6" cols="80"
-                          placeholder="✍️ Expliquez puis donnez la solution."></textarea><br>
+            <!-- Troisième colonne -->
+            <section class="column">
+                <h2>Corriger une réponse</h2>
+                <form onsubmit="correctText(); return false;">
+                    <label for="input_text">Collez votre texte :</label><br>
+                    <textarea id="input_text" rows="6" placeholder="✍️ Collez votre texte ici pour correction."></textarea><br><br>
 
-                <button class="button-container" type="submit">Générer une réponse</button>
-            </form>
-            <h2>Résultat</h2>
-            <textarea id="response" rows="10" cols="80" readonly></textarea>
-            <div class="button-container">
-                <button onclick="copyToClipboard()">Copier la réponse</button>
-                <button type="button" onclick="resetForm()">Nouvelle demande</button>
-            </div>
-        </section>
-        <!-- Section droite -->
-        <section class="right-column">
-            <h2>Dernières demandes</h2>
-            <div id="recent-requests">
-                <ul>
-                    {% for request in recent_requests %}
-                        <li>
-                            <strong>Demande :</strong> {{ request.user_request }}<br>
-                            <strong>Réponse proposée :</strong> {{ request.user_response }}<br>
-                            <button type="button"
-                                    data-request="{{ request.user_request|escape }}"
-                                    data-response="{{ request.user_response|escape }}"
-                                    onclick="applyRequest(this)">Appliquer cette demande</button>
-                        </li>
-                        <hr>
-                    {% endfor %}
-                </ul>
-            </div>
-        </section>
+                    <button type="submit">Corriger le texte</button>
+                </form>
+                <div id="correction-container" class="result-section" style="display: none;">
+                    <h2>Résultat</h2>
+                    <textarea id="response_correction" rows="6" readonly></textarea>
+                    <div class="button-container">
+                        <button onclick="copyToClipboard('response_correction')">Copier le texte corrigé</button>
+                        <button onclick="resetForm('input_text', 'response_correction', 'correction-container')">Nouvelle correction</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Row 2 : Historiques -->
+        <div class="row">
+            <!-- Historique des Requêtes -->
+            <section class="column" id="request-history" style="display: none;">
+                <h2>Historique des Requêtes</h2>
+                <ul></ul>
+            </section>
+
+            <!-- Historique des Corrections -->
+            <section class="column" id="correction-history" style="display: none;">
+                <h2>Historique des Corrections</h2>
+                <ul></ul>
+            </section>
+        </div>
     </main>
 </body>
 </html>

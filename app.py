@@ -58,6 +58,44 @@ def generate():
         print("Erreur serveur : ", e)
         return jsonify({"error": "Erreur interne du serveur."}), 500
 
+@app.route("/correct", methods=["POST"])
+def correct():
+    try:
+        # Récupération des données depuis le frontend
+        data = request.json
+        input_text = data.get("input_text", "").strip()
+
+        if not input_text:
+            return jsonify({"error": "Le texte fourni est vide."}), 400
+
+        # Prompt pour GPT-3.5 Turbo
+        prompt = (
+            f"Corriger ce texte, et appliquer un ton professionnel, formel, empathique, clair, cohérent, fluide et facilement compréhensible. "
+            f"Utilisez les codes rédactionnels d'un email rédigé par un service client avec les formules de politesse. "
+            f"Voici le texte : {input_text}"
+        )
+
+        # Appel à l'API OpenAI
+        response = openai.ChatCompletion.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "You are a professional writing assistant."},
+                {"role": "user", "content": prompt}
+            ],
+            max_tokens=300,
+            temperature=0.7,
+        )
+
+        gpt_response = response['choices'][0]['message']['content']
+        return jsonify({"response": gpt_response})
+
+    except openai.error.OpenAIError as e:
+        return jsonify({"error": f"Erreur de l'API OpenAI : {str(e)}"}), 500
+
+    except Exception as e:
+        return jsonify({"error": "Erreur interne du serveur."}), 500
+
+
 @app.errorhandler(Exception)
 def handle_exception(e):
     """Gestion globale des erreurs Flask."""
