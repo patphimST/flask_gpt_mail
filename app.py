@@ -103,4 +103,4 @@ def handle_exception(e):
     return jsonify({"error": "Une erreur est survenue, veuillez réessayer."}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5001)
+    app.run(host="0.0.0.0", port=5002)
